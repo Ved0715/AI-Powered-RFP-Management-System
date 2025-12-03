@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import vendors
+from routers import vendors, rfps
 
 app = FastAPI(
     title="AI-Powered RFP Management System",
@@ -18,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(vendors.router)
+app.include_router(rfps.router)
 
 @app.get("/")
 async def root():

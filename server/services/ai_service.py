@@ -6,12 +6,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 async def parse_rfp_description(description: str) -> dict:
-
+    
     system_prompt = """You are an expert at parsing procurement RFP (Request for Proposal) descriptions.
 Extract structured information from natural language descriptions.
 
@@ -36,32 +35,30 @@ Example output:
 }
 """
 
-
     try:
-        responce = await client.chat.completions.create(
+        response = await client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user" , "content": description}
+                {"role": "user", "content": description}
             ],
-            responce_format={"type":"json_object"},
+            response_format={"type": "json_object"},
             temperature=0
         )
-
-        parsed_data = json.load(responce.choices[0].message.content)
+        
+        parsed_data = json.loads(response.choices[0].message.content)
         
         if parsed_data.get("deadline_days"):
-            deadline = daterime.utcnow() + timedelta(day=parsed_data["deadline_days"])
+            deadline = datetime.utcnow() + timedelta(days=parsed_data["deadline_days"])
             parsed_data["deadline"] = deadline.isoformat()
         else:
             parsed_data["deadline"] = None
         
         parsed_data.pop("deadline_days", None)
-
+        
         return parsed_data
-
+        
     except Exception as e:
-
         return {
             "title": "Untitled RFP",
             "requirements": [],

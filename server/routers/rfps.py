@@ -8,6 +8,8 @@ from schemas.rfp import RFPCreate, RFPResponse, RFPUpdate, RFPVendorLink
 from schemas.vendor import VendorResponse
 from services.ai_service import parse_rfp_description
 
+from services.email_service import send_rfp_email
+
 
 router = APIRouter(prefix="/api/rfps", tags=["RFPs"])
 
@@ -18,12 +20,25 @@ async def create_rfp(rfp: RFPCreate, db: AsyncSession = Depends(get_db)):
     
     parsed_data = await parse_rfp_description(rfp.description)
     
+    # Parse deadline string to datetime if present
+    deadline = None
+    if parsed_data.get("deadline"):
+        from datetime import datetime
+        deadline_str = parsed_data.get("deadline")
+        if isinstance(deadline_str, str):
+            try:
+                deadline = datetime.fromisoformat(deadline_str)
+            except:
+                deadline = None
+        else:
+            deadline = deadline_str
+    
     try:
         new_rfp = RFP(
             title=parsed_data.get("title", "Untitled RFP"),
             description=rfp.description,
             budget=parsed_data.get("budget"),
-            deadline=parsed_data.get("deadline"),
+            deadline=deadline,
             requirements=parsed_data.get("requirements", []),
             payment_terms=parsed_data.get("payment_terms"),
             warranty_terms=parsed_data.get("warranty_terms"),
@@ -269,3 +284,72 @@ async def get_rfp_vendors(
             detail=f"Failed to fetch vendors: {str(e)}"
         )
 
+
+
+@router.post("/{rfp_id}/send", response_model=dict)
+async def send_rfp_to_vendors(
+    rfp_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Send RFP to all linked vendors via email"""
+    
+    try:
+        # Get RFP
+        result = await db.execute(select(RFP).where(RFP.id == rfp_id))
+        rfp = result.scalar_one_or_none()
+        
+        if not rfp:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"RFP with id {rfp_id} not found"
+            )
+        
+        if not rfp.sent_to_vendors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No vendors linked to this RFP"
+            )
+        
+        # Get vendors
+        sent_results = []
+        for vendor_id in rfp.sent_to_vendors:
+            result = await db.execute(select(Vendor).where(Vendor.id == vendor_id))
+            vendor = result.scalar_one_or_none()
+            
+            if vendor:
+                # Send email
+                email_result = send_rfp_email(
+                    vendor_email=vendor.email,
+                    vendor_name=vendor.name,
+                    rfp_data={
+                        "title": rfp.title,
+                        "description": rfp.description,
+                        "budget": float(rfp.budget) if rfp.budget else None,
+                        "deadline": rfp.deadline.isoformat() if rfp.deadline else None,
+                        "requirements": rfp.requirements,
+                        "payment_terms": rfp.payment_terms,
+                        "warranty_terms": rfp.warranty_terms
+                    }
+                )
+                sent_results.append({
+                    "vendor": vendor.name,
+                    **email_result
+                })
+        
+        # Update RFP status
+        rfp.status = "PROCESSING"
+        await db.commit()
+        
+        return {
+            "rfp_id": rfp_id,
+            "sent_to": len(sent_results),
+            "results": sent_results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send RFP: {str(e)}"
+        )

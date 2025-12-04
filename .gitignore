@@ -107,3 +107,7 @@ desktop.ini
 *.tmp
 *.swp
 *~
+
+
+credentials.json
+token.json

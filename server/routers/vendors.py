@@ -12,7 +12,12 @@ router = APIRouter(prefix="/api/vendors", tags=["Vendors"])
 #create
 @router.post("/", response_model=VendorResponse, status_code=status.HTTP_201_CREATED)
 async def create_vendor( vendor: VendorCreate, db: AsyncSession = Depends(get_db)):
-
+    # Check if vendor with email already exists
+    result = await db.execute(
+        select(Vendor).where(Vendor.email == vendor.email.lower().strip())
+    )
+    existing_vendor = result.scalar_one_or_none()
+    
     if existing_vendor:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

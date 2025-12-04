@@ -68,3 +68,67 @@ Example output:
             "warranty_terms": None,
             "error": str(e)
         }
+
+
+async def parse_vendor_proposal(email_body: str, email_subject: str = "") -> dict:
+    """
+    Parse vendor proposal email using AI to extract structured data
+    
+    Args:
+        email_body: Email body content
+        email_subject: Email subject line
+        
+    Returns:
+        dict with: total_price, line_items, delivery_time, terms, warranty
+    """
+    
+    system_prompt = """You are an expert at parsing vendor proposal emails.
+Extract structured information from vendor responses to RFPs.
+
+Return a JSON object with these fields:
+- total_price: Total price/cost mentioned (number, null if not found)
+- line_items: Array of items with their prices (array of objects with "item" and "price", empty if not found)
+- delivery_time: Delivery/completion timeline mentioned (string, null if not found)
+- terms: Payment terms or conditions (string, null if not found)
+- warranty: Warranty information (string, null if not found)
+
+Example input: "We can provide the 20 laptops at $800 each and 15 monitors at $300 each. Total: $19,500. Delivery in 25 days. Payment net 30. 2-year warranty included."
+
+Example output:
+{
+  "total_price": 19500,
+  "line_items": [
+    {"item": "20 laptops", "price": 16000},
+    {"item": "15 monitors", "price": 4500}
+  ],
+  "delivery_time": "25 days",
+  "terms": "Net 30",
+  "warranty": "2-year warranty"
+}
+"""
+    
+    full_text = f"Subject: {email_subject}\n\n{email_body}"
+    
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": full_text}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0
+        )
+        
+        parsed_data = json.loads(response.choices[0].message.content)
+        return parsed_data
+        
+    except Exception as e:
+        return {
+            "total_price": None,
+            "line_items": [],
+            "delivery_time": None,
+            "terms": None,
+            "warranty": None,
+            "error": str(e)
+        }

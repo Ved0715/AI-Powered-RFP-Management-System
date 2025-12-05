@@ -7,17 +7,21 @@ export interface StatCardProps {
   trend?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon }: StatCardProps) {
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <Icon className="h-6 w-6 text-blue-600" />
+    <div className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+      <div className="flex items-center justify-between">
+        <div className="p-4 bg-blue-50 rounded-xl group-hover:bg-blue-600 transition-colors duration-300">
+          <Icon className="h-8 w-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
         </div>
-        {trend && <span className="text-sm text-green-600">{trend}</span>}
+        <div className="text-right">
+          <p className="text-sm font-medium text-slate-500">{title}</p>
+          <h3 className="text-2xl font-bold text-slate-900">{value}</h3>
+        </div>
       </div>
-      <h3 className="text-slate-600 text-sm font-medium">{title}</h3>
-      <p className="text-3xl font-bold text-slate-900 mt-1">{value}</p>
+      <div>
+        {/* if i need i will add description */}
+      </div>
     </div>
   );
 }

@@ -16,7 +16,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-slate-900 mb-8 m-4">Dashboard</h1>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -24,19 +24,16 @@ export default function DashboardPage() {
           title="Total RFPs"
           value={stats.totalRFPs}
           icon={FileText}
-          trend="+12%"
         />
         <StatCard
           title="Total Vendors"
           value={stats.totalVendors}
           icon={Users}
-          trend="+8%"
         />
         <StatCard
           title="Total Proposals"
           value={stats.totalProposals}
           icon={Mail}
-          trend="+24%"
         />
         <StatCard
           title="Active RFPs"

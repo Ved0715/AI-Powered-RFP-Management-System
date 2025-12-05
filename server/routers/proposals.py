@@ -6,20 +6,20 @@ from typing import List
 from datetime import datetime
 
 from models import get_db, Proposal, RFP, Vendor
+
 from schemas.proposal import ProposalCreate, ProposalResponse, ProposalUpdate
 from services.email_service import get_unread_emails, mark_email_as_read
 from services.ai_service import parse_vendor_proposal
+from services.crew_service import compare_proposals
+
 
 
 router = APIRouter(prefix="/api/proposals", tags=["Proposals"])
 
 
-#cehck for venders responce with ai.
+#check for venders responce with ai.
 @router.post("/rfps/{rfp_id}/check-responses", response_model=dict)
-async def check_vendor_responses(
-    rfp_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def check_vendor_responses( rfp_id: str, db: AsyncSession = Depends(get_db) ):
 
     
     try:
@@ -60,7 +60,6 @@ async def check_vendor_responses(
             else:
                 email_address = sender.strip().lower()
             
-            # Check if this vendor already has a proposal
             vendor_id = vendor_map.get(email_address)
             if not vendor_id:
                 continue
@@ -82,7 +81,6 @@ async def check_vendor_responses(
                 email_subject=email_data['subject']
             )
             
-            # Create proposal
             new_proposal = Proposal(
                 rfp_id=rfp_id,
                 vendor_id=vendor_id,
@@ -103,7 +101,6 @@ async def check_vendor_responses(
                 "email_subject": email_data['subject']
             })
             
-            # Mark email as read
             mark_email_as_read(email_data['id'])
         
         await db.commit()
@@ -148,13 +145,12 @@ async def get_rfp_proposals(
         )
 
 
-# GET SINGLE PROPOSAL
+#GET SINGLE PROPOSAL
 @router.get("/{proposal_id}", response_model=ProposalResponse)
 async def get_proposal(
     proposal_id: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get specific proposal by ID"""
     
     try:
         result = await db.execute(select(Proposal).where(Proposal.id == proposal_id))
@@ -177,16 +173,14 @@ async def get_proposal(
         )
 
 
-# CREATE PROPOSAL MANUALLY (for testing)
+# CREATE PROPOSAL MANUALLY 
 @router.post("/", response_model=ProposalResponse, status_code=status.HTTP_201_CREATED)
 async def create_proposal(
     proposal: ProposalCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    """Create a proposal manually (for testing/demo purposes)"""
     
     try:
-        # Verify RFP exists
         result = await db.execute(select(RFP).where(RFP.id == proposal.rfp_id))
         rfp = result.scalar_one_or_none()
         if not rfp:
@@ -195,7 +189,6 @@ async def create_proposal(
                 detail=f"RFP with id {proposal.rfp_id} not found"
             )
         
-        # Verify vendor exists
         result = await db.execute(select(Vendor).where(Vendor.id == proposal.vendor_id))
         vendor = result.scalar_one_or_none()
         if not vendor:
@@ -236,13 +229,8 @@ async def create_proposal(
 
 # UPDATE PROPOSAL
 @router.put("/{proposal_id}", response_model=ProposalResponse)
-async def update_proposal(
-    proposal_id: str,
-    proposal_update: ProposalUpdate,
-    db: AsyncSession = Depends(get_db)
-):
-    """Update proposal information"""
-    
+async def update_proposal( proposal_id: str, proposal_update: ProposalUpdate, db: AsyncSession = Depends(get_db)): 
+
     update_data = proposal_update.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(
@@ -280,10 +268,7 @@ async def update_proposal(
 
 # DELETE PROPOSAL
 @router.delete("/{proposal_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_proposal(
-    proposal_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def delete_proposal( proposal_id: str, db: AsyncSession = Depends(get_db)):
     
     try:
         result = await db.execute(select(Proposal).where(Proposal.id == proposal_id))
@@ -307,4 +292,85 @@ async def delete_proposal(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete proposal: {str(e)}"
+        )
+
+#compare proposals
+@router.get("/rfps/{rfp_id}/compare", response_model=dict)
+async def compare_rfp_proposals( rfp_id: str, db: AsyncSession = Depends(get_db) ):
+
+    try:
+
+        result = await db.execute(select(RFP).where(RFP.id == rfp_id))
+        rfp = result.scalar_one_or_none()
+        
+        if not rfp:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"RFP with id {rfp_id} not found"
+            )
+        
+        #Get all proposals for this RFP
+        result = await db.execute(
+            select(Proposal).where(Proposal.rfp_id == rfp_id)
+        )
+        proposals = result.scalars().all()
+        
+        if not proposals:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No proposals found for this RFP"
+            )
+        
+        if len(proposals) < 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least 2 proposals required for comparison"
+            )
+        
+        rfp_data = {
+            "title": rfp.title,
+            "description": rfp.description,
+            "budget": float(rfp.budget) if rfp.budget else None,
+            "deadline": rfp.deadline.isoformat() if rfp.deadline else None,
+            "requirements": rfp.requirements,
+            "payment_terms": rfp.payment_terms,
+            "warranty_terms": rfp.warranty_terms
+        }
+        
+        proposals_data = []
+        for proposal in proposals:
+            proposals_data.append({
+                "vendor_id": proposal.vendor_id,
+                "total_price": float(proposal.total_price) if proposal.total_price else None,
+                "line_items": proposal.line_items,
+                "delivery_time": proposal.delivery_time,
+                "terms": proposal.terms,
+                "warranty": proposal.warranty
+            })
+        
+        #run CrewAI comparison
+        comparison_result = compare_proposals(rfp_data, proposals_data)
+        
+        if not comparison_result.get("success"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"AI comparison failed: {comparison_result.get('error')}"
+            )
+        
+        return {
+            "rfp_id": rfp_id,
+            "proposal_count": len(proposals),
+            "recommended_vendor": comparison_result.get("recommended_vendor"),
+            "scores": comparison_result.get("scores"),
+            "reasons": comparison_result.get("reasons"),
+            "summary": comparison_result.get("summary"),
+            "full_analysis": comparison_result.get("full_analysis")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to compare proposals: {str(e)}"
         )

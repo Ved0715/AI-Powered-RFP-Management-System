@@ -27,9 +27,9 @@ const FeatureCard = ({
       viewport={{ once: true }}
       transition={{ delay, duration: 0.4 }}
       whileHover={{ y: -8 }}
-      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:shadow-indigo-500/10"
+      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-all hover:shadow-xl hover:shadow-blue-500/10"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-blue-500/5 opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-blue-600/5 opacity-0 transition-opacity group-hover:opacity-100" />
       <div className="relative z-10">{children}</div>
     </motion.div>
   );
@@ -42,7 +42,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-slate-200/60 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-700 to-blue-700 shadow-lg shadow-indigo-700/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-500/30">
               <Zap className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-slate-900">RFP AI</span>
@@ -63,7 +63,7 @@ export default function LandingPage() {
             </a>
             <Link
               href="/dashboard"
-              className="rounded-xl bg-indigo-700 px-6 py-2.5 font-semibold text-white transition-all hover:bg-indigo-800 hover:shadow-lg hover:shadow-indigo-700/40"
+              className="rounded-xl bg-blue-600 px-6 py-2.5 font-semibold text-white transition-all hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/40"
             >
               Get Started
             </Link>
@@ -83,7 +83,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mb-8 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700"
+              className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700"
             >
               <Zap className="h-4 w-4" />
               Powered by OpenAI & CrewAI
@@ -97,9 +97,7 @@ export default function LandingPage() {
               className="mb-6 text-6xl font-bold leading-tight text-slate-900 md:text-7xl lg:text-8xl"
             >
               AI-Powered <br className="hidden md:block" />
-              <span className="bg-gradient-to-r from-indigo-700 to-blue-700 bg-clip-text text-transparent">
-                RFP Management
-              </span>
+              <span className="text-blue-600">RFP Management</span>
             </motion.h1>
 
             {/* Subheading */}
@@ -111,7 +109,7 @@ export default function LandingPage() {
             >
               Automate vendor management, parse proposals with AI, and get
               intelligent recommendations. Cut procurement time by{" "}
-              <span className="font-bold text-indigo-700">80%</span>.
+              <span className="font-bold text-blue-600">80%</span>.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -123,7 +121,7 @@ export default function LandingPage() {
             >
               <Link
                 href="/dashboard"
-                className="group inline-flex items-center gap-2 rounded-2xl bg-indigo-700 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-indigo-700/30 transition-all hover:bg-indigo-800 hover:scale-105 hover:shadow-2xl hover:shadow-indigo-700/40"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-blue-500/30 transition-all hover:bg-blue-700 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/40"
               >
                 <span>Start Free Trial</span>
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -144,23 +142,19 @@ export default function LandingPage() {
               className="mx-auto mt-20 grid max-w-3xl grid-cols-3 gap-8"
             >
               <div className="text-center">
-                <div className="mb-2 text-5xl font-bold text-indigo-700">
-                  80%
-                </div>
+                <div className="mb-2 text-5xl font-bold text-blue-600">80%</div>
                 <div className="text-sm font-medium text-slate-600">
                   Time Saved
                 </div>
               </div>
               <div className="text-center">
-                <div className="mb-2 text-5xl font-bold text-blue-700">95%</div>
+                <div className="mb-2 text-5xl font-bold text-blue-600">95%</div>
                 <div className="text-sm font-medium text-slate-600">
                   Accuracy
                 </div>
               </div>
               <div className="text-center">
-                <div className="mb-2 text-5xl font-bold text-indigo-700">
-                  4x
-                </div>
+                <div className="mb-2 text-5xl font-bold text-blue-600">4x</div>
                 <div className="text-sm font-medium text-slate-600">Faster</div>
               </div>
             </motion.div>
@@ -168,8 +162,8 @@ export default function LandingPage() {
         </div>
 
         {/* Subtle Decorative Blurs */}
-        <div className="absolute -left-40 bottom-0 h-80 w-80 rounded-full bg-indigo-400 opacity-10 blur-3xl" />
-        <div className="absolute -right-40 top-40 h-80 w-80 rounded-full bg-blue-400 opacity-10 blur-3xl" />
+        <div className="absolute -left-40 bottom-0 h-80 w-80 rounded-full bg-blue-400 opacity-10 blur-3xl" />
+        <div className="absolute -right-40 top-40 h-80 w-80 rounded-full bg-blue-500 opacity-10 blur-3xl" />
       </section>
 
       {/* Features Section */}
@@ -186,7 +180,7 @@ export default function LandingPage() {
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <FeatureCard delay={0}>
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-700 shadow-lg shadow-indigo-700/30">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/30">
                 <Brain className="h-7 w-7 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-900">
@@ -199,7 +193,7 @@ export default function LandingPage() {
             </FeatureCard>
 
             <FeatureCard delay={0.1}>
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 shadow-lg shadow-blue-700/30">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/30">
                 <Mail className="h-7 w-7 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-900">
@@ -212,7 +206,7 @@ export default function LandingPage() {
             </FeatureCard>
 
             <FeatureCard delay={0.2}>
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-700 shadow-lg shadow-indigo-700/30">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/30">
                 <Zap className="h-7 w-7 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-900">
@@ -225,7 +219,7 @@ export default function LandingPage() {
             </FeatureCard>
 
             <FeatureCard delay={0.3}>
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 shadow-lg shadow-blue-700/30">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/30">
                 <BarChart3 className="h-7 w-7 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-900">
@@ -238,7 +232,7 @@ export default function LandingPage() {
             </FeatureCard>
 
             <FeatureCard delay={0.4}>
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-700 shadow-lg shadow-indigo-700/30">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/30">
                 <TrendingUp className="h-7 w-7 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-900">
@@ -251,7 +245,7 @@ export default function LandingPage() {
             </FeatureCard>
 
             <FeatureCard delay={0.5}>
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 shadow-lg shadow-blue-700/30">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-500/30">
                 <CheckCircle2 className="h-7 w-7 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-bold text-slate-900">
@@ -267,19 +261,19 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-700 to-blue-700 py-32">
+      <section className="relative overflow-hidden bg-blue-600 py-32">
         <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,rgba(0,0,0,0.8),rgba(0,0,0,0.4))]" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
           <h2 className="mb-6 text-5xl font-bold text-white md:text-6xl">
             Ready to Transform Your Procurement?
           </h2>
-          <p className="mb-10 text-xl text-indigo-100">
+          <p className="mb-10 text-xl text-blue-100">
             Join modern companies using AI to streamline their RFP process
           </p>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-lg font-bold text-indigo-700 shadow-2xl transition-all hover:scale-105 hover:shadow-white/20"
+            className="inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-lg font-bold text-blue-600 shadow-2xl transition-all hover:scale-105 hover:shadow-white/20"
           >
             Get Started Free
             <ArrowRight className="h-5 w-5" />
@@ -291,7 +285,7 @@ export default function LandingPage() {
       <footer className="bg-slate-900 py-12 text-slate-400 border-t border-slate-800">
         <div className="mx-auto max-w-7xl px-6 text-center">
           <div className="mb-4 flex items-center justify-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-700 to-blue-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
               <Zap className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-bold text-white">RFP AI</span>

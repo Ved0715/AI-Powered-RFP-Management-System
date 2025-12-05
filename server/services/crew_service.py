@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def compare_proposals(rfp_data: Dist, proposals: List[Dict] ) -> Dict:
+def compare_proposals(rfp_data: Dict, proposals: List[Dict]) -> Dict:
 
     proposals_text = ""
     for i, proposal in enumerate(proposals, 1):

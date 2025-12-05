@@ -16,7 +16,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# Include routers
+
 app.include_router(vendors.router)
 app.include_router(rfps.router)
 app.include_router(proposals.router)

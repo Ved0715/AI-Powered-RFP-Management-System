@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Mail, Building2, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import {
+  Plus,
+  Mail,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  Copy,
+  Phone,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function VendorsPage() {
@@ -9,6 +19,24 @@ export default function VendorsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const limit = 10; // Items per page
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Aru you sure you want to delete this vendor?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/vendors/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        // Remove from UI immediately
+        setVendors(vendors.filter((v) => v.id !== id));
+      } else {
+        alert("Failed to delete vendor");
+      }
+    } catch (error) {
+      console.error("Error deleting:", error);
+    }
+  };
 
   useEffect(() => {
     async function fetchVendors() {
@@ -62,6 +90,9 @@ export default function VendorsPage() {
               <th className="px-6 py-4 text-sm font-semibold text-slate-700">
                 Email
               </th>
+              <th className="px-6 py-4 text-sm font-semibold text-slate-700">
+                Phone
+              </th>
               <th className="px-6 py-4 text-sm font-semibold text-slate-700 text-right">
                 Actions
               </th>
@@ -93,30 +124,77 @@ export default function VendorsPage() {
               </tr>
             ) : (
               vendors.map((vendor) => (
-                <tr key={vendor.id} className="hover:bg-slate-50 transition">
+                <tr
+                  key={vendor.id}
+                  className="group hover:bg-slate-50 transition-colors duration-200"
+                >
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                        <Building2 className="h-5 w-5" />
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                        {vendor.name.substring(0, 2).toUpperCase()}
                       </div>
-                      <span className="font-medium text-slate-900">
-                        {vendor.name}
-                      </span>
+                      <div>
+                        <span className="font-semibold text-slate-900 block">
+                          {vendor.name}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          ID: {vendor.id.slice(0, 8)}...
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    {vendor.contact_name || vendor.contact_person}
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-slate-900 font-medium">
+                      {vendor.contact_person || "N/A"}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-slate-400" />
+                  <td className="px-6 py-4">
+                    <div
+                      className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg w-fit cursor-pointer hover:bg-slate-100 transition-colors group/copy"
+                      onClick={() => {
+                        navigator.clipboard.writeText(vendor.email);
+                        // You might want to add a toast notification here
+                      }}
+                      title="Click to copy email"
+                    >
+                      <Mail className="h-3.5 w-3.5 text-slate-400" />
                       {vendor.email}
+                      <Copy className="h-3 w-3 text-slate-300 opacity-0 group-hover/copy:opacity-100 transition-opacity ml-1" />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div
+                      className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg w-fit cursor-pointer hover:bg-slate-100 transition-colors group/copy"
+                      onClick={() => {
+                        if (vendor.phone)
+                          navigator.clipboard.writeText(vendor.phone);
+                      }}
+                      title="Click to copy phone"
+                    >
+                      <Phone className="h-3.5 w-3.5 text-slate-400" />
+                      {vendor.phone || "N/A"}
+                      {vendor.phone && (
+                        <Copy className="h-3 w-3 text-slate-300 opacity-0 group-hover/copy:opacity-100 transition-opacity ml-1" />
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-lg transition">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/dashboard/vendors/${vendor.id}`}
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Edit Vendor"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(vendor.id)}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        title="Delete Vendor"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

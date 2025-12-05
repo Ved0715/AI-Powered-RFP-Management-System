@@ -1,17 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Mail, Building2 } from "lucide-react";
+import { Plus, Mail, Building2, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const limit = 10; // Items per page
 
   useEffect(() => {
     async function fetchVendors() {
+      setIsLoading(true);
       try {
-        const res = await fetch("http://localhost:8000/api/vendors/");
+        const skip = (page - 1) * limit;
+        const res = await fetch(
+          `http://localhost:8000/api/vendors/?skip=${skip}&limit=${limit}`
+        );
         if (res.ok) {
           const data = await res.json();
           setVendors(data);
@@ -23,7 +29,7 @@ export default function VendorsPage() {
       }
     }
     fetchVendors();
-  }, []);
+  }, [page]);
 
   return (
     <div>
@@ -42,52 +48,105 @@ export default function VendorsPage() {
         </Link>
       </div>
 
-      {/* Vendors Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
-          <div className="col-span-full text-center py-12">Loading...</div>
-        ) : vendors.length === 0 ? (
-          <div className="col-span-full text-center py-12 bg-white rounded-xl border border-slate-200">
-            <Building2 className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-900">
-              No vendors yet
-            </h3>
-            <p className="text-slate-500 mb-6">
-              Add your first vendor to get started
-            </p>
-            <Link
-              href="/dashboard/vendors/add"
-              className="text-blue-600 font-medium hover:underline"
-            >
-              Add Vendor
-            </Link>
-          </div>
-        ) : (
-          vendors.map((vendor) => (
-            <div
-              key={vendor.id}
-              className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <Building2 className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
+      {/* Vendors List (Table) */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200">
+              <th className="px-6 py-4 text-sm font-semibold text-slate-700">
+                Company
+              </th>
+              <th className="px-6 py-4 text-sm font-semibold text-slate-700">
+                Contact Person
+              </th>
+              <th className="px-6 py-4 text-sm font-semibold text-slate-700">
+                Email
+              </th>
+              <th className="px-6 py-4 text-sm font-semibold text-slate-700 text-right">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-6 py-12 text-center text-slate-500"
+                >
+                  Loading...
+                </td>
+              </tr>
+            ) : vendors.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <Building2 className="h-10 w-10 text-slate-300 mb-3" />
+                    <p className="text-slate-500 font-medium">
+                      No vendors found
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      Add a new vendor to get started
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              vendors.map((vendor) => (
+                <tr key={vendor.id} className="hover:bg-slate-50 transition">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <Building2 className="h-5 w-5" />
+                      </div>
+                      <span className="font-medium text-slate-900">
+                        {vendor.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-slate-600">
+                    {vendor.contact_name || vendor.contact_person}
+                  </td>
+                  <td className="px-6 py-4 text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-slate-400" />
+                      {vendor.email}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-lg transition">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-              <h3 className="text-lg font-bold text-slate-900 mb-1">
-                {vendor.name}
-              </h3>
-              <p className="text-sm text-slate-500 mb-4">
-                {vendor.contact_name}
-              </p>
-
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Mail className="h-4 w-4" />
-                {vendor.email}
-              </div>
-            </div>
-          ))
-        )}
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-6">
+        <p className="text-sm text-slate-500">
+          Showing page{" "}
+          <span className="font-medium text-slate-900">{page}</span>
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1 || isLoading}
+            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <ChevronLeft className="h-5 w-5 text-slate-600" />
+          </button>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={vendors.length < limit || isLoading}
+            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            <ChevronRight className="h-5 w-5 text-slate-600" />
+          </button>
+        </div>
       </div>
     </div>
   );

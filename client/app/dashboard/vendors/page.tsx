@@ -11,8 +11,11 @@ import {
   Trash2,
   Copy,
   Phone,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { AddVendorSheet } from "@/components/AddVendorSheet";
+import { Button } from "@/components/ui/button";
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<any[]>([]);
@@ -21,14 +24,13 @@ export default function VendorsPage() {
   const limit = 10; // Items per page
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Aru you sure you want to delete this vendor?")) return;
+    if (!confirm("Are you sure you want to delete this vendor?")) return;
 
     try {
       const res = await fetch(`http://localhost:8000/api/vendors/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        // Remove from UI immediately
         setVendors(vendors.filter((v) => v.id !== id));
       } else {
         alert("Failed to delete vendor");
@@ -36,6 +38,10 @@ export default function VendorsPage() {
     } catch (error) {
       console.error("Error deleting:", error);
     }
+  };
+
+  const handleVendorAdded = (newVendor: any) => {
+    setVendors([newVendor, ...vendors]);
   };
 
   useEffect(() => {
@@ -67,13 +73,8 @@ export default function VendorsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Vendors</h1>
           <p className="text-slate-500 mt-1">Manage your supplier database</p>
         </div>
-        <Link
-          href="/dashboard/vendors/add"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          <Plus className="h-4 w-4" />
-          Add Vendor
-        </Link>
+
+        <AddVendorSheet onVendorAdded={handleVendorAdded} />
       </div>
 
       {/* Vendors List (Table) */}
@@ -102,7 +103,7 @@ export default function VendorsPage() {
             {isLoading ? (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={5}
                   className="px-6 py-12 text-center text-slate-500"
                 >
                   Loading...
@@ -110,7 +111,7 @@ export default function VendorsPage() {
               </tr>
             ) : vendors.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center">
+                <td colSpan={5} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <Building2 className="h-10 w-10 text-slate-300 mb-3" />
                     <p className="text-slate-500 font-medium">
@@ -153,7 +154,6 @@ export default function VendorsPage() {
                       className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg w-fit cursor-pointer hover:bg-slate-100 transition-colors group/copy"
                       onClick={() => {
                         navigator.clipboard.writeText(vendor.email);
-                        // You might want to add a toast notification here
                       }}
                       title="Click to copy email"
                     >

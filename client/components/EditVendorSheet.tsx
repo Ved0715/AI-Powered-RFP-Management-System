@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +28,24 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-interface AddVendorSheetProps {
-  onVendorAdded: (vendor: any) => void;
+interface Vendor {
+  id: string;
+  name: string;
+  email: string;
+  contact_person: string;
+  phone?: string;
+  notes?: string;
 }
 
-export function AddVendorSheet({ onVendorAdded }: AddVendorSheetProps) {
+interface EditVendorSheetProps {
+  vendor: Vendor;
+  onVendorUpdated: (vendor: Vendor) => void;
+}
+
+export function EditVendorSheet({
+  vendor,
+  onVendorUpdated,
+}: EditVendorSheetProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,33 +57,48 @@ export function AddVendorSheet({ onVendorAdded }: AddVendorSheetProps) {
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      contact_person: "",
-      email: "",
-      phone: "",
-      notes: "",
+      name: vendor.name,
+      contact_person: vendor.contact_person,
+      email: vendor.email,
+      phone: vendor.phone || "",
+      notes: vendor.notes || "",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      reset({
+        name: vendor.name,
+        contact_person: vendor.contact_person,
+        email: vendor.email,
+        phone: vendor.phone || "",
+        notes: vendor.notes || "",
+      });
+    }
+  }, [open, vendor, reset]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/vendors/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+      const res = await fetch(
+        `http://localhost:8000/api/vendors/${vendor.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        }
+      );
 
       if (res.ok) {
-        const newVendor = await res.json();
-        onVendorAdded(newVendor);
+        const updatedVendor = await res.json();
+        onVendorUpdated(updatedVendor);
         setOpen(false);
-        reset();
       } else {
-        alert("Failed to create vendor");
+        alert("Failed to update vendor");
       }
     } catch (error) {
       console.error("Error:", error);
+      alert("Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -79,33 +107,38 @@ export function AddVendorSheet({ onVendorAdded }: AddVendorSheetProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4" />
-          Add Vendor
-        </Button>
+        <button
+          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+          title="Edit Vendor"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
       </SheetTrigger>
       <SheetContent className="sm:max-w-[600px] p-4">
         <SheetHeader>
-          <SheetTitle>Add New Vendor</SheetTitle>
+          <SheetTitle>Edit Vendor</SheetTitle>
           <SheetDescription>
-            Enter the details of your new supplier here. Click save when you're
-            done.
+            Update the details for {vendor.name}. Click save when you're done.
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Company Name</Label>
-            <Input id="name" placeholder="Acme Corp" {...register("name")} />
+            <Label htmlFor="edit-name">Company Name</Label>
+            <Input
+              id="edit-name"
+              placeholder="Acme Corp"
+              {...register("name")}
+            />
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contact_person">Contact Person</Label>
+            <Label htmlFor="edit-contact_person">Contact Person</Label>
             <Input
-              id="contact_person"
+              id="edit-contact_person"
               placeholder="John Doe"
               {...register("contact_person")}
             />
@@ -117,9 +150,9 @@ export function AddVendorSheet({ onVendorAdded }: AddVendorSheetProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="edit-email">Email</Label>
             <Input
-              id="email"
+              id="edit-email"
               type="email"
               placeholder="contact@acme.com"
               {...register("email")}
@@ -130,17 +163,18 @@ export function AddVendorSheet({ onVendorAdded }: AddVendorSheetProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone (Optional)</Label>
+            <Label htmlFor="edit-phone">Phone (Optional)</Label>
             <Input
-              id="phone"
+              id="edit-phone"
               placeholder="+1 234 567 890"
               {...register("phone")}
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="notes">Note (Optional)</Label>
+            <Label htmlFor="edit-notes">Note (Optional)</Label>
             <Input
-              id="notes"
+              id="edit-notes"
               placeholder="Write a short note about the vendor"
               {...register("notes")}
             />
@@ -160,10 +194,10 @@ export function AddVendorSheet({ onVendorAdded }: AddVendorSheetProps) {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
+                  Updating...
                 </>
               ) : (
-                "Create Vendor"
+                "Save Changes"
               )}
             </Button>
           </SheetFooter>

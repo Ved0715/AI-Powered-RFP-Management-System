@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AddVendorSheet } from "@/components/AddVendorSheet";
+import { EditVendorSheet } from "@/components/EditVendorSheet";
 import { Button } from "@/components/ui/button";
 
 export default function VendorsPage() {
@@ -22,6 +23,13 @@ export default function VendorsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const limit = 10; // Items per page
+
+
+  const handleVendorUpdated = (updatedVendor: any) => {
+  setVendors(vendors.map(v => v.id === updatedVendor.id ? updatedVendor : v));
+};
+
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this vendor?")) return;
@@ -180,13 +188,10 @@ export default function VendorsPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/dashboard/vendors/${vendor.id}`}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Edit Vendor"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Link>
+                      <EditVendorSheet 
+                          vendor={vendor} 
+                          onVendorUpdated={handleVendorUpdated} 
+                        />
                       <button
                         onClick={() => handleDelete(vendor.id)}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"

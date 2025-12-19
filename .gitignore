@@ -111,3 +111,6 @@ desktop.ini
 
 credentials.json
 token.json
+
+
+*.pdf
